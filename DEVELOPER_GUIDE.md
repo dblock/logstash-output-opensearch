@@ -27,6 +27,15 @@ Example:
 
 ### Install Prerequisites
 
+#### Java
+
+Java 8 is required, newer versions [cannot be used](https://github.com/elastic/logstash/issues/5942).
+
+```
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
+```
+
 #### JRuby
 
 This plugin builds using [JRuby](https://www.jruby.org/). This means you'll need JRuby with the Bundler gem installed.
@@ -46,6 +55,10 @@ rvm --default use jruby
 #Installing bundler
 gem install bundler
 ```
+
+Tested with jruby-9.2.9.0.
+
+Check that your version of JRuby reports `java` for `ruby -e "puts RUBY_PLATFORM"`. 
 
 #### Docker
 

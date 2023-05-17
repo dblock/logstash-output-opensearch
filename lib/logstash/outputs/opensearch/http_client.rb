@@ -45,9 +45,9 @@ module LogStash; module Outputs; class OpenSearch;
     #   through a special http path, such as using mod_rewrite.
     def initialize(options={})
       @logger = options[:logger]
-      @metric = options[:metric]
-      @bulk_request_metrics = @metric.namespace(:bulk_requests)
-      @bulk_response_metrics = @bulk_request_metrics.namespace(:responses)
+      # @metric = options[:metric]
+      # @bulk_request_metrics = @metric.namespace(:bulk_requests)
+      # @bulk_response_metrics = @bulk_request_metrics.namespace(:responses)
 
       # Again, in case we use DEFAULT_OPTIONS in the future, uncomment this.
       # @options = DEFAULT_OPTIONS.merge(options)

@@ -78,7 +78,7 @@ class LogStash::Outputs::OpenSearch < LogStash::Outputs::Base
   include(LogStash::PluginMixins::OpenSearch::Common)
 
   # ecs_compatibility option, provided by Logstash core or the support adapter.
-  include(LogStash::PluginMixins::ECSCompatibilitySupport(:disabled, :v1, :v8))
+  # include(LogStash::PluginMixins::ECSCompatibilitySupport(:disabled, :v1, :v8))
 
   # Generic/API config options that any document indexer output needs
   include(LogStash::PluginMixins::OpenSearch::APIConfigs)
