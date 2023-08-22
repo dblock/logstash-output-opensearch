@@ -136,7 +136,7 @@ module LogStash; module Outputs; class OpenSearch; class HttpClient;
       until @state_mutex.synchronize { @stopping }
         begin
           now = Time.now
-          if (now - last_done) >= delay
+          if delay.nil? || (now - last_done) >= delay
             last_done = now
             yield
           end

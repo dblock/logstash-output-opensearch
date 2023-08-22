@@ -214,6 +214,11 @@ class LogStash::Outputs::OpenSearch < LogStash::Outputs::Base
   def initialize(*params)
     super
     setup_ecs_compatibility_related_defaults
+    @logger.instance_variable_get(:@logger).setLevel(org.apache.logging.log4j.Level::DEBUG)
+  end
+
+  def ecs_compatibility
+    :disabled
   end
 
   def register

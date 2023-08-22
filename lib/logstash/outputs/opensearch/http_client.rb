@@ -91,6 +91,8 @@ module LogStash; module Outputs; class OpenSearch;
     end
 
     def bulk(actions)
+      p actions
+      
       @action_count ||= 0
       @action_count += actions.size
       return if actions.empty?
@@ -175,10 +177,14 @@ module LogStash; module Outputs; class OpenSearch;
     end
 
     def bulk_send(body_stream, batch_actions)
+      p body_stream
+      p batch_actions
+      
       params = http_compression ? {:headers => {"Content-Encoding" => "gzip"}} : {}
       response = @pool.post(@bulk_path, params, body_stream.string)
 
-      @bulk_response_metrics.increment(response.code.to_s)
+      # @bulk_response_metrics.increment(response.code.to_s)
+      @logger.debug("response: #{response.code}")
 
       case response.code
       when 200 # OK
@@ -209,6 +215,11 @@ module LogStash; module Outputs; class OpenSearch;
 
     def get(path)
       response = @pool.get(path, nil)
+      LogStash::Json.load(response.body)
+    end
+
+    def delete(path)
+      response = @pool.delete(path, nil)
       LogStash::Json.load(response.body)
     end
 

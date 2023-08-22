@@ -17,22 +17,49 @@ puts "Running on #{RUBY_PLATFORM} ..."
 class MakeRequest
   include Callable
 
-  def initialize(client, iters)
-    @client = client
+  def initialize(iters)
     @iters = iters
   end
 
   def call
-    begin
-      @iters.times do
-        @client.get('/')
+    options = {
+      hosts: [
+        URI('https://search-dblock-test-opensearch-21-tu5gqrjd4vg4qazjsu6bps5zsy.us-west-2.es.amazonaws.com')
+      ],
+      logger: Cabin::Channel.get,
+      auth_type: {
+          "type" => 'aws_iam',
+          "aws_access_key_id" => ENV['AWS_ACCESS_KEY_ID'],
+          "aws_secret_access_key" => ENV['AWS_SECRET_ACCESS_KEY'],
+          "session_token" => ENV['AWS_SESSION_TOKEN'],
+          "region" => ENV['AWS_REGION']
+      }
+    }
+     
+    @iters.times do |iter|
+      begin
+        client = LogStash::Outputs::OpenSearch::HttpClient.new(options)
+        client.get('/')
+        STDOUT.write '.'
+      rescue LogStash::Outputs::OpenSearch::HttpClient::Pool::BadResponseCodeError => e
+        puts "#{e.response_code}: #{e.response_body}"
+        STDOUT.write 'x'
       end
-      STDOUT.write '.'
-    rescue LogStash::Outputs::OpenSearch::HttpClient::Pool::BadResponseCodeError
-      STDOUT.write 'x'
     end
   end
 end
+
+logger = Cabin::Channel.get
+logger.level = :debug
+l = Logger.new(STDOUT)
+l.level = Logger::DEBUG
+logger.subscribe(l)
+
+java::lang.System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
+java::lang.System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
+java::lang.System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
+java::lang.System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
+
 
 executor = ThreadPoolExecutor.new(
   4, # core_pool_treads
@@ -42,34 +69,19 @@ executor = ThreadPoolExecutor.new(
   LinkedBlockingQueue.new
 )
 
-num_tests = 10
-num_threads = 10
-num_iters = 100
+num_tests = 1
+num_threads = 1
+num_iters = 1
 
 total_time = 0.0
 
-options = {
-    hosts: [
-      URI('https://search-dblock-test-opensearch-21-tu5gqrjd4vg4qazjsu6bps5zsy.us-west-2.es.amazonaws.com')
-    ],
-    logger: Cabin::Channel.get,
-    auth_type: {
-        "type" => 'aws_iam',
-        "aws_access_key_id" => ENV['AWS_ACCESS_KEY_ID'],
-        "aws_secret_access_key" => ENV['AWS_SECRET_ACCESS_KEY'],
-        "session_token" => ENV['AWS_SESSION_TOKEN'],
-        "region" => ENV['AWS_REGION']
-    }
-}
-
-client = LogStash::Outputs::OpenSearch::HttpClient.new(options)
 
 num_tests.times do |i|
   tasks = []
 
   t_0 = Time.now
   num_threads.times do
-    task = FutureTask.new(MakeRequest.new(client, num_iters))
+    task = FutureTask.new(MakeRequest.new(num_iters))
     executor.execute(task)
     tasks << task
   end
